@@ -27,12 +27,13 @@ cd themancavedashboard
 ```
 
 ### Step 3: Create Your Configuration
-Copy the example config file and edit it:
+Copy the example files and edit them:
 ```bash
 cp config.example.json config.json
+cp .env.example .env
 ```
 
-Edit `config.json` with your information:
+**Edit `config.json`** with your personal information:
 ```json
 {
   "personal": {
@@ -47,44 +48,51 @@ Edit `config.json` with your information:
       "min_moisture": 30,
       "max_moisture": 70
     }
+  },
+  "display": {
+    "night_mode_start": "22:00",
+    "night_mode_end": "07:00",
+    "photo_rotation_seconds": 45,
+    "refresh_interval_minutes": 5
   }
 }
 ```
 
-### Step 4: Set Up Your API Keys
-Create a `.env` file with your API keys:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your API keys (you can skip the ones you don't need):
+**Edit `.env`** with your API keys (you can skip the ones you don't need):
 ```env
-# Google Calendar (required for calendar events)
-GOOGLE_CREDENTIALS_PATH=./credentials.json
-GOOGLE_TOKEN_PATH=./token.json
+# Timezone
+TZ=America/Chicago
 
-# Tesla (optional - for car status)
+# Backend port (internal)
+PORT=8080
+
+# Personal Configuration (now primarily from config.json)
+ANNIVERSARY_DATE=2020-08-17
+TRASH_DAY=Wednesday
+
+# API Credentials (used as fallback if config.json doesn't exist)
 TESSIE_API_KEY=your_tessie_api_key
 TESSIE_VIN=your_tesla_vin
-
-# Weather (optional - for weather display)
 OPENWEATHER_API_KEY=your_openweather_api_key
 WEATHER_LAT=41.8781
 WEATHER_LON=-87.6298
-
-# Plant Sensors (optional - for plant care)
+MEAL_ICAL_URL=https://your-meal-app.com/calendar.ics
 ECOWITT_API_KEY=your_ecowitt_api_key
 ECOWITT_APPLICATION_KEY=your_ecowitt_app_key
 ECOWITT_GATEWAY_MAC=your_gateway_mac
 
-# Meal Planning (optional - for meal calendar)
-MEAL_ICAL_URL=https://your-meal-app.com/calendar.ics
+# Google OAuth files (if using file-based credentials)
+GOOGLE_CREDENTIALS_PATH=./credentials.json
+GOOGLE_TOKEN_PATH=./token.json
 
-# Photos (optional - for photo slideshow)
+# Main config file
+CONFIG_PATH=./config.json
+
+# Photos directory
 PHOTOS_PATH=./photos
 ```
 
-### Step 5: Run the Dashboard
+### Step 4: Run the Dashboard
 ```bash
 docker-compose up -d
 ```
