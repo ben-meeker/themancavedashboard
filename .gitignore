@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+token.json
+config.json/
+
+# User data
+public/photos/*.JPEG
+public/photos/*.JPG
+public/photos/*.jpg
+public/photos/*.jpeg
+public/photos/*.PNG
+public/photos/*.png
+public/photos/*.HEIC
+public/photos/*.heic
+public/photos/photos.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp

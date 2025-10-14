@@ -1,0 +1,40 @@
+# Dependencies
+node_modules
+npm-debug.log
+
+# Build output
+dist
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Docs
+README.md
+SETUP.md
+*.md
+
+# Scripts (except if needed)
+scripts
+
+# Misc
+.DS_Store
+
+# Environment variables
+.env
+*.env.*
+!.env.example
+
+# Sensitive files - DO NOT include in image
+token.json
+config.json/
+
+# User data - mount as volumes instead
+public/photos/
+

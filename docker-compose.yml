@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  dashboard:
+    image: bemeeker/themancavedashboard:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mancave-dashboard
+    ports:
+      - "3000:80"
+    environment:
+      # Timezone
+      - TZ=${TZ:-America/Chicago}
+      # Backend port (internal)
+      - PORT=8080
+      # Personal Configuration
+      - ANNIVERSARY_DATE=${ANNIVERSARY_DATE:-}
+      - TRASH_DAY=${TRASH_DAY:-}
+      # API Credentials (used as fallback if config.json doesn't exist)
+      - TESSIE_API_KEY=${TESSIE_API_KEY:-}
+      - TESSIE_VIN=${TESSIE_VIN:-}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:-}
+      - WEATHER_LAT=${WEATHER_LAT:-}
+      - WEATHER_LON=${WEATHER_LON:-}
+      - MEAL_ICAL_URL=${MEAL_ICAL_URL:-}
+      - ECOWITT_API_KEY=${ECOWITT_API_KEY:-}
+      - ECOWITT_APPLICATION_KEY=${ECOWITT_APPLICATION_KEY:-}
+      - ECOWITT_GATEWAY_MAC=${ECOWITT_GATEWAY_MAC:-}
+    volumes:
+      # Google OAuth files (if using file-based credentials)
+      - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
+      - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
+      # Persistent config storage
+      - dashboard-config:/app/config
+      # Mount photos directory from host machine
+      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  dashboard-config:
+    driver: local
+

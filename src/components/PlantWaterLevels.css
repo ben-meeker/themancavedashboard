@@ -1,0 +1,146 @@
+.plant-water-levels {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.plants-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition: filter 0.3s ease;
+}
+
+.plants-wrapper.blurred {
+  filter: blur(4px);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.plants-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.coming-soon-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.coming-soon-overlay .overlay-icon {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+}
+
+.coming-soon-overlay .overlay-message {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0.25rem;
+}
+
+.coming-soon-overlay .overlay-hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.plant-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.plant-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.plant-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.plant-name {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.battery-warning {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.plant-location {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.plant-ideal {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
+.plant-level {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.level-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.level-percentage {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  min-width: 40px;
+}
+
+.loading-message {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.9rem;
+}
+
+.level-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.level-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+.level-status {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 55px;
+  text-align: right;
+}
+
