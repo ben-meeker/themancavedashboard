@@ -43,12 +43,16 @@ const UpcomingMeals: React.FC = () => {
     
     // Convert events to meals with relative day labels
     const processedMeals = events.map(event => {
-      const mealDate = new Date(event.start);
+      // Parse the UTC date and extract just the date part (YYYY-MM-DD)
+      const mealDateStr = event.start.split('T')[0]; // "2025-10-14"
       const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      mealDate.setHours(0, 0, 0, 0);
+      const todayStr = today.toISOString().split('T')[0]; // "2025-10-14"
       
-      const diffDays = Math.floor((mealDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      // Calculate difference in days using date strings
+      const mealDate = new Date(mealDateStr + 'T00:00:00');
+      const todayDate = new Date(todayStr + 'T00:00:00');
+      const diffDays = Math.floor((mealDate.getTime() - todayDate.getTime()) / (1000 * 60 * 60 * 24));
+      
       
       let dayLabel: string;
       if (diffDays === 0) {

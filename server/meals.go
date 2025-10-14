@@ -19,8 +19,8 @@ type MealEvent struct {
 }
 
 func getMealCalendar(w http.ResponseWriter, r *http.Request) {
-	cfg := getConfig()
-	icalURL := cfg.Meals.ICalURL
+	config := getConfig()
+	icalURL := config.Meals.ICalURL
 
 	if icalURL == "" {
 		http.Error(w, `{"error":"Meal calendar not configured"}`, http.StatusServiceUnavailable)
@@ -54,9 +54,12 @@ func getMealCalendar(w http.ResponseWriter, r *http.Request) {
 	// Debug logging
 	fmt.Printf("[Meals] Total events parsed: %d\n", len(events))
 
-	// Filter events to next 7 days
+	// Filter events to next 7 days using local timezone
 	now := time.Now()
-	endDate := now.AddDate(0, 0, 7)
+	// Start from beginning of today, not current time
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+	endDate := today.AddDate(0, 0, 7)
+	fmt.Printf("[Meals] Current time: %s\n", now.Format("2006-01-02 15:04:05 MST"))
 
 	var upcomingMeals []MealEvent
 	for _, event := range events {
@@ -66,9 +69,8 @@ func getMealCalendar(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		if eventTime.After(now) && eventTime.Before(endDate) {
+		if eventTime.After(today.Add(-time.Hour)) && eventTime.Before(endDate) {
 			upcomingMeals = append(upcomingMeals, event)
-			fmt.Printf("[Meals] Adding event: %s at %s\n", event.Title, event.Start)
 		}
 	}
 
@@ -136,10 +138,11 @@ func parseICalDate(dateStr string, isAllDay bool) time.Time {
 	dateStr = strings.TrimSpace(dateStr)
 
 	if isAllDay {
-		// Format: YYYYMMDD
+		// Format: YYYYMMDD - treat as local time at midnight
 		t, err := time.Parse("20060102", dateStr)
 		if err == nil {
-			return t
+			// For all-day events, use local timezone at midnight
+			return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
 		}
 	} else {
 		// Format: YYYYMMDDTHHMMSSZ or YYYYMMDDTHHMMSS
@@ -151,6 +154,7 @@ func parseICalDate(dateStr string, isAllDay bool) time.Time {
 		} else {
 			t, err := time.Parse("20060102T150405", dateStr)
 			if err == nil {
+				// Assume local time if no timezone specified
 				return t
 			}
 		}
