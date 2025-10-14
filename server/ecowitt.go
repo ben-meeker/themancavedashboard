@@ -14,11 +14,11 @@ type EcowittResponse struct {
 }
 
 type SoilMoistureSensor struct {
-	Channel  string  `json:"channel"`
-	Name     string  `json:"name"`
-	Location string  `json:"location"`
-	Moisture int     `json:"moisture"`
-	Battery  float64 `json:"battery"`
+	Channel        string `json:"channel"`
+	Name           string `json:"name"`
+	Location       string `json:"location"`
+	Moisture       int    `json:"moisture"`
+	MoistureStatus string `json:"moisture_status"`
 }
 
 type IndoorSensor struct {
@@ -73,17 +73,16 @@ func getEcowittData(w http.ResponseWriter, r *http.Request) {
 		Sensors: []SoilMoistureSensor{},
 	}
 
-	// Parse soil moisture sensors
-	sensorNames := map[string]string{
-		"soil_ch1": "Fiddle-Leaf Fig",
-		"soil_ch2": "Snake Plant",
-		"soil_ch3": "Pothos",
-		"soil_ch4": "Monstera",
+	// Get sensor names from config
+	sensorNames := make(map[string]string)
+	fmt.Printf("[Ecowitt] Plant sensors in config: %+v\n", config.PlantSensors)
+	for key, sensorConfig := range config.PlantSensors {
+		sensorNames[key] = sensorConfig.Name
+		fmt.Printf("[Ecowitt] Sensor %s -> %s\n", key, sensorConfig.Name)
 	}
 
 	for i := 1; i <= 8; i++ {
 		channelKey := fmt.Sprintf("soil_ch%d", i)
-		batteryKey := fmt.Sprintf("soilmoisture_sensor_ch%d", i)
 
 		// Try to get moisture value from nested structure
 		var moistureVal float64
@@ -110,24 +109,21 @@ func getEcowittData(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if foundMoisture {
+			sensorConfig := GetPlantSensorConfig(channelKey)
 			sensor := SoilMoistureSensor{
 				Channel:  channelKey,
-				Name:     sensorNames[channelKey],
-				Location: "Living Room",
+				Name:     sensorConfig.Name,
+				Location: sensorConfig.Location,
 				Moisture: int(moistureVal),
-				Battery:  5.0, // Default
 			}
 
-			// Get battery level from battery object
-			if batteryObj, ok := apiResp.Data["battery"].(map[string]interface{}); ok {
-				if batteryData, ok := batteryObj[batteryKey].(map[string]interface{}); ok {
-					switch val := batteryData["value"].(type) {
-					case float64:
-						sensor.Battery = val
-					case string:
-						sensor.Battery = parseFloat(val)
-					}
-				}
+			// Determine moisture status using config ranges
+			if moistureVal < sensorConfig.MinMoisture {
+				sensor.MoistureStatus = "low"
+			} else if moistureVal > sensorConfig.MaxMoisture {
+				sensor.MoistureStatus = "high"
+			} else {
+				sensor.MoistureStatus = "good"
 			}
 
 			response.Sensors = append(response.Sensors, sensor)

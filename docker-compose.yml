@@ -14,9 +14,6 @@ services:
       - TZ=${TZ:-America/Chicago}
       # Backend port (internal)
       - PORT=8080
-      # Personal Configuration
-      - ANNIVERSARY_DATE=${ANNIVERSARY_DATE:-}
-      - TRASH_DAY=${TRASH_DAY:-}
       # API Credentials (used as fallback if config.json doesn't exist)
       - TESSIE_API_KEY=${TESSIE_API_KEY:-}
       - TESSIE_VIN=${TESSIE_VIN:-}
@@ -27,14 +24,18 @@ services:
       - ECOWITT_API_KEY=${ECOWITT_API_KEY:-}
       - ECOWITT_APPLICATION_KEY=${ECOWITT_APPLICATION_KEY:-}
       - ECOWITT_GATEWAY_MAC=${ECOWITT_GATEWAY_MAC:-}
+      # Main config file
+      - CONFIG_PATH=${CONFIG_PATH:-./config.json}
     volumes:
-      # Google OAuth files (if using file-based credentials)
-      - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
-      - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
-      # Persistent config storage
-      - dashboard-config:/app/config
-      # Mount photos directory from host machine
-      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+          # Google OAuth files (if using file-based credentials)
+          - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
+          - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
+          # Mount main config file (if CONFIG_PATH is set)
+          - ${CONFIG_PATH:-./config.json}:/app/external-config.json:ro
+          # Persistent config storage (for API keys)
+          - dashboard-config:/app/config
+          # Mount photos directory from host machine
+          - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
