@@ -20,20 +20,14 @@ If you don't have Docker installed:
 - **Windows/Mac**: Download from [docker.com](https://www.docker.com/products/docker-desktop)
 - **Linux**: Run `curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh`
 
-### Step 2: Download the Dashboard
+### Step 2: Create Your Configuration Files
+Create a folder for your dashboard:
 ```bash
-git clone https://github.com/yourusername/themancavedashboard.git
-cd themancavedashboard
+mkdir my-dashboard
+cd my-dashboard
 ```
 
-### Step 3: Create Your Configuration
-Copy the example files and edit them:
-```bash
-cp config.example.json config.json
-cp .env.example .env
-```
-
-**Edit `config.json`** with your personal information:
+Create your `config.json`:
 ```json
 {
   "personal": {
@@ -58,19 +52,12 @@ cp .env.example .env
 }
 ```
 
-**Edit `.env`** with your API keys (you can skip the ones you don't need):
+Create your `.env` file:
 ```env
 # Timezone
 TZ=America/Chicago
 
-# Backend port (internal)
-PORT=8080
-
-# Personal Configuration (now primarily from config.json)
-ANNIVERSARY_DATE=2020-08-17
-TRASH_DAY=Wednesday
-
-# API Credentials (used as fallback if config.json doesn't exist)
+# API Credentials (add your keys here)
 TESSIE_API_KEY=your_tessie_api_key
 TESSIE_VIN=your_tesla_vin
 OPENWEATHER_API_KEY=your_openweather_api_key
@@ -81,7 +68,7 @@ ECOWITT_API_KEY=your_ecowitt_api_key
 ECOWITT_APPLICATION_KEY=your_ecowitt_app_key
 ECOWITT_GATEWAY_MAC=your_gateway_mac
 
-# Google OAuth files (if using file-based credentials)
+# Google OAuth files
 GOOGLE_CREDENTIALS_PATH=./credentials.json
 GOOGLE_TOKEN_PATH=./token.json
 
@@ -92,7 +79,47 @@ CONFIG_PATH=./config.json
 PHOTOS_PATH=./photos
 ```
 
-### Step 4: Run the Dashboard
+Create a `docker-compose.yml` file:
+```yaml
+version: '3.8'
+
+services:
+  dashboard:
+    image: bemeeker/themancavedashboard:latest
+    container_name: mancave-dashboard
+    ports:
+      - "3000:80"
+    environment:
+      - TZ=${TZ:-America/Chicago}
+      - PORT=8080
+      - ANNIVERSARY_DATE=${ANNIVERSARY_DATE:-}
+      - TRASH_DAY=${TRASH_DAY:-}
+      - TESSIE_API_KEY=${TESSIE_API_KEY:-}
+      - TESSIE_VIN=${TESSIE_VIN:-}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:-}
+      - WEATHER_LAT=${WEATHER_LAT:-}
+      - WEATHER_LON=${WEATHER_LON:-}
+      - MEAL_ICAL_URL=${MEAL_ICAL_URL:-}
+      - ECOWITT_API_KEY=${ECOWITT_API_KEY:-}
+      - ECOWITT_APPLICATION_KEY=${ECOWITT_APPLICATION_KEY:-}
+      - ECOWITT_GATEWAY_MAC=${ECOWITT_GATEWAY_MAC:-}
+      - GOOGLE_CREDENTIALS_PATH=${GOOGLE_CREDENTIALS_PATH:-}
+      - GOOGLE_TOKEN_PATH=${GOOGLE_TOKEN_PATH:-}
+      - CONFIG_PATH=${CONFIG_PATH:-./config.json}
+    volumes:
+      - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
+      - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
+      - ${CONFIG_PATH:-./config.json}:/app/external-config.json:ro
+      - dashboard-config:/app/config
+      - ${PHOTOS_PATH:-./photos}:/usr/share/nginx/html/photos:ro
+    restart: unless-stopped
+
+volumes:
+  dashboard-config:
+    driver: local
+```
+
+### Step 3: Run the Dashboard
 ```bash
 docker-compose up -d
 ```
