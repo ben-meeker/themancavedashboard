@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -70,6 +71,13 @@ func getMealCalendar(w http.ResponseWriter, r *http.Request) {
 			fmt.Printf("[Meals] Adding event: %s at %s\n", event.Title, event.Start)
 		}
 	}
+
+	// Sort meals by date (closest first)
+	sort.Slice(upcomingMeals, func(i, j int) bool {
+		timeI, _ := time.Parse(time.RFC3339, upcomingMeals[i].Start)
+		timeJ, _ := time.Parse(time.RFC3339, upcomingMeals[j].Start)
+		return timeI.Before(timeJ)
+	})
 
 	fmt.Printf("[Meals] Upcoming meals found: %d\n", len(upcomingMeals))
 

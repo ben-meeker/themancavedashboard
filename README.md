@@ -1,5 +1,7 @@
 # 🏠 The Man Cave Dashboard
 
+[![Docker Hub](https://img.shields.io/badge/docker-bemeeker%2Fthemancavedashboard-blue?logo=docker)](https://hub.docker.com/r/bemeeker/themancavedashboard)
+
 A beautiful, customizable smart home dashboard that displays all your important information in one place. Perfect for wall-mounted displays, tablets, or any screen in your home.
 
 ## ✨ What This Dashboard Shows
