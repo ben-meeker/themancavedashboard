@@ -44,7 +44,6 @@ Create your `config.json`:
     "timezone": "America/Denver",
     "night_mode_start": "22:00",
     "night_mode_end": "07:00",
-    "photo_rotation_seconds": 45,
     "refresh_interval_minutes": 5,
     "grid_columns": 6,
     "grid_rows": 4
