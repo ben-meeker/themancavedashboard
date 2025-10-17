@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"themancavedashboard/widgets"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -14,6 +16,12 @@ import (
 func main() {
 	// Load configuration on startup
 	loadConfig()
+
+	// Initialize all widgets
+	if err := widgets.InitializeAll(); err != nil {
+		log.Fatalf("Failed to initialize widgets: %v", err)
+	}
+	log.Printf("Initialized %d widgets", len(widgets.GetAll()))
 
 	r := chi.NewRouter()
 
@@ -40,34 +48,12 @@ func main() {
 
 	// API routes
 	r.Route("/api", func(r chi.Router) {
-		// Data endpoints
-		r.Get("/tesla/status", getTeslaStatus)
-		r.Get("/calendar/events", getCalendarEvents)
-		r.Get("/meals", getMealCalendar)
-		r.Get("/weather", getWeather)
-		r.Get("/ecowitt", getEcowittData)
-		r.Get("/personal/config", getPersonalConfig)
-		r.Get("/photos/list", getPhotosList)
+		// Register all widget routes
+		widgets.RegisterAllRoutes(r)
 
-		// Google OAuth config
-		r.Get("/google/client-id", getGoogleClientID)
-		r.Get("/google/token-status", getGoogleTokenStatus)
-
-		// Setup endpoints
-		r.Get("/setup/personal/status", getPersonalSetupStatus)
-		r.Post("/setup/personal", setupPersonal)
-
-		r.Get("/setup/tesla/status", getTeslaSetupStatus)
-		r.Post("/setup/tesla", setupTesla)
-
-		r.Get("/setup/weather/status", getWeatherSetupStatus)
-		r.Post("/setup/weather", setupWeather)
-
-		r.Get("/setup/meals/status", getMealsSetupStatus)
-		r.Post("/setup/meals", setupMeals)
-
-		r.Get("/setup/ecowitt/status", getEcowittSetupStatus)
-		r.Post("/setup/ecowitt", setupEcowitt)
+		// Shared infrastructure endpoints
+		r.Get("/layout", getDashboardLayout)
+		r.Post("/layout", saveDashboardLayout)
 	})
 
 	port := os.Getenv("PORT")

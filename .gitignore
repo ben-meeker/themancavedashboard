@@ -1,17 +1,72 @@
-# Dependencies
+# =====================
+# General
+# =====================
+.DS_Store
+.env
+.env.*
 node_modules/
-npm-debug.log*
-
-# Build outputs
 dist/
 build/
+coverage/
+*.log
 
-# Environment and secrets
-.env
-.env.local
-.env.*.local
-token.json
-config.json/
+# =====================
+# React / TypeScript
+# =====================
+# Dependency directories
+/node_modules/
+/pnpm-lock.yaml
+/yarn.lock
+/package-lock.json
+
+# Build output
+/dist/
+/build/
+/out/
+/.next/
+
+# Misc
+*.tsbuildinfo
+.vscode/
+.idea/
+*.swp
+
+# =====================
+# Go
+# =====================
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Binaries
+bin/
+cmd/*/bin/
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Dependency / build cache
+vendor/
+*.coverprofile
+*.pprof
+
+# =====================
+# OS / Editor files
+# =====================
+Thumbs.db
+ehthumbs.db
+*.tmp
+*.bak
+*.sublime-project
+*.sublime-workspace
+*.iml
+
 
 # User data
 public/photos/*.JPEG
@@ -23,25 +78,3 @@ public/photos/*.png
 public/photos/*.HEIC
 public/photos/*.heic
 public/photos/photos.json
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
-logs/
-
-# Test coverage
-coverage/
-
-# Temporary files
-*.tmp
-*.temp

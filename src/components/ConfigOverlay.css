@@ -1,0 +1,151 @@
+/* ========================================
+   CONFIGURATION OVERLAY
+   Standardized styling for widget configuration states
+   ======================================== */
+
+.config-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: var(--border-radius-3xl);
+  transition: all var(--transition-normal);
+}
+
+.config-overlay-content {
+  text-align: center;
+  padding: var(--space-6);
+  max-width: 300px;
+  width: 100%;
+}
+
+.config-icon {
+  font-size: var(--font-size-5xl);
+  margin-bottom: var(--space-4);
+  opacity: 0.8;
+  filter: grayscale(0.3);
+}
+
+.config-message {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  line-height: var(--line-height-tight);
+}
+
+.config-hint {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-4);
+  line-height: var(--line-height-normal);
+}
+
+.config-missing-params {
+  background: var(--color-bg-quaternary);
+  border: var(--border-width-thin) solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  text-align: left;
+}
+
+.missing-params-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.missing-params-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.missing-param {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+.missing-param:hover {
+  background: var(--color-bg-secondary);
+}
+
+.missing-param-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-warning);
+  flex-shrink: 0;
+}
+
+.missing-param-name {
+  font-size: var(--font-size-xs);
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width-thin) solid var(--color-border-secondary);
+}
+
+.config-button {
+  margin-top: var(--space-2);
+  box-shadow: var(--shadow-glow);
+}
+
+.config-button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-glow-hover);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .config-overlay-content {
+    padding: var(--space-4);
+    max-width: 280px;
+  }
+  
+  .config-icon {
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--space-3);
+  }
+  
+  .config-message {
+    font-size: var(--font-size-lg);
+    margin-bottom: var(--space-2);
+  }
+  
+  .config-hint {
+    font-size: var(--font-size-xs);
+    margin-bottom: var(--space-3);
+  }
+  
+  .config-missing-params {
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+  
+  .missing-param {
+    padding: var(--space-1) var(--space-2);
+  }
+  
+  .missing-param-name {
+    font-size: 0.6rem;
+    padding: 0.15rem 0.3rem;
+  }
+}

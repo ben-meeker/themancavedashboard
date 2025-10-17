@@ -9,31 +9,16 @@ services:
     container_name: mancave-dashboard
     ports:
       - "3000:80"
+    env_file:
+      - .env
     environment:
-      # Timezone
-      - TZ=${TZ:-America/Chicago}
-      # Backend port (internal)
       - PORT=8080
-      # API Credentials (used as fallback if config.json doesn't exist)
-      - TESSIE_API_KEY=${TESSIE_API_KEY:-}
-      - TESSIE_VIN=${TESSIE_VIN:-}
-      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY:-}
-      - WEATHER_LAT=${WEATHER_LAT:-}
-      - WEATHER_LON=${WEATHER_LON:-}
-      - MEAL_ICAL_URL=${MEAL_ICAL_URL:-}
-      - ECOWITT_API_KEY=${ECOWITT_API_KEY:-}
-      - ECOWITT_APPLICATION_KEY=${ECOWITT_APPLICATION_KEY:-}
-      - ECOWITT_GATEWAY_MAC=${ECOWITT_GATEWAY_MAC:-}
-      # Main config file
-      - CONFIG_PATH=${CONFIG_PATH:-./config.json}
     volumes:
           # Google OAuth files (if using file-based credentials)
           - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
           - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
-          # Mount main config file (if CONFIG_PATH is set)
-          - ${CONFIG_PATH:-./config.json}:/app/external-config.json:ro
-          # Persistent config storage (for API keys)
-          - dashboard-config:/app/config
+          # Mount config directory (better than file mount for editors that atomic-write)
+          - ${CONFIG_PATH:-./config.json}:/app/external-config.json:delegated
           # Mount photos directory from host machine
           - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
     restart: unless-stopped
@@ -44,7 +29,4 @@ services:
       retries: 3
       start_period: 10s
 
-volumes:
-  dashboard-config:
-    driver: local
 

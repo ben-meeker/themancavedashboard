@@ -1,12 +1,12 @@
 .dashboard {
   width: 100%;
   height: 100vh;
-  padding: 1.5rem;
+  padding: var(--space-6);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
-  transition: filter 1s ease, opacity 1s ease;
+  transition: filter var(--transition-very-slow), opacity var(--transition-very-slow);
 }
 
 /* Night mode: 10 PM - 7 AM to prevent burn-in */
@@ -17,85 +17,32 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 300px 1fr 380px;
+  grid-template-columns: 400px 1fr 400px;
   grid-template-rows: auto auto 1fr auto;
-  gap: 1.5rem;
+  gap: var(--space-4);
   width: 100%;
   height: 100%;
   min-height: 0;
 }
 
-.card {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
+/* Edit Mode Styles */
+.dashboard.edit-mode {
+  background: var(--color-bg-secondary);
 }
 
-.card-header {
+.dashboard.loading {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  flex-shrink: 0;
+  justify-content: center;
 }
 
-.card-icon {
-  font-size: 1.25rem;
+.loading-message {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-secondary);
 }
 
-.card-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.card-content {
-  color: rgba(255, 255, 255, 0.8);
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
-/* Specific card layouts */
-.tesla-card {
-  grid-column: 1;
-  grid-row: 1;
-  align-self: start;
-}
-
-.weather-card {
-  grid-column: 1;
-  grid-row: 2;
-  align-self: start;
-}
-
-.plants-card {
-  grid-column: 1;
-  grid-row: 3;
-  align-self: start;
-}
-
-.calendar-card {
-  grid-column: 2;
-  grid-row: 1 / span 4;
-}
-
-.meals-card {
-  grid-column: 3;
-  grid-row: 1 / span 2;
-}
-
-.photos-card {
-  grid-column: 3;
-  grid-row: 3 / span 2;
+.dashboard-grid-editable {
+  position: relative;
+  z-index: 5;
 }
 
