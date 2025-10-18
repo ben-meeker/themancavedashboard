@@ -6,6 +6,7 @@
 // Import widget configs to trigger registration
 import './Calendar/widget.config';
 import './Tesla/widget.config';
+import './Traeger/widget.config';
 import './Weather/widget.config';
 import './PlantSensors/widget.config';
 import './MealCalendar/widget.config';
@@ -17,6 +18,7 @@ import './PhotoCarousel/widget.config';
 // Export components for backward compatibility
 export { default as Calendar } from './Calendar/Calendar';
 export { default as Tesla } from './Tesla/Tesla';
+export { default as Traeger } from './Traeger/Traeger';
 export { default as Weather } from './Weather/Weather';
 export { default as PlantSensors } from './PlantSensors/PlantSensors';
 export { default as MealCalendar } from './MealCalendar/MealCalendar';

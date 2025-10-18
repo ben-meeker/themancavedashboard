@@ -74,10 +74,76 @@ func init() {
 ### Step 4: Rebuild
 
 ```bash
-docker-compose build && docker-compose up -d
+docker compose build && docker compose up -d
 ```
 
 See `server/widgets/README.md` for complete backend documentation.
+
+### Using Redis in Backend Widgets
+
+Widgets can use Redis for caching, rate limiting, or temporary storage:
+
+1. **Get Redis URL from environment**:
+   ```go
+   redisURL := os.Getenv("REDIS_URL") // redis://redis:6379
+   ```
+
+2. **Use a unique prefix for your widget**:
+   ```go
+   // Good: Prevents key collisions
+   key := "mywidget:data"
+   
+   // Bad: Could conflict with other widgets
+   key := "data"
+   ```
+
+3. **Example Redis usage**:
+   ```go
+   import (
+       "context"
+       "github.com/redis/go-redis/v9"
+   )
+   
+   // In your widget struct
+   type MyWidget struct {
+       redis *redis.Client
+   }
+   
+   // In Initialize()
+   func (w *MyWidget) Initialize() error {
+       opt, _ := redis.ParseURL(os.Getenv("REDIS_URL"))
+       w.redis = redis.NewClient(opt)
+       return nil
+   }
+   
+   // In your handlers
+   func (w *MyWidget) getData(rw http.ResponseWriter, r *http.Request) {
+       ctx := context.Background()
+       
+       // Try cache first
+       cached, err := w.redis.Get(ctx, "mywidget:data").Result()
+       if err == nil {
+           rw.Write([]byte(cached))
+           return
+       }
+       
+       // Fetch fresh data
+       data := fetchFromAPI()
+       
+       // Cache for 5 minutes
+       w.redis.Set(ctx, "mywidget:data", data, 5*time.Minute)
+       
+       rw.Write([]byte(data))
+   }
+   ```
+
+**Redis Key Naming Convention**:
+- Use format: `widgetname:key:subkey`
+- Examples:
+  - `tesla:battery_level`
+  - `weather:forecast:40.7128,-74.0060`
+  - `photos:last_rotation`
+  - `calendar:events:cache`
 
 ## 📁 Widget File Structure
 

@@ -23,7 +23,9 @@ export const widgetConfig: WidgetMetadata = {
       description: 'Array of reminder objects with name and date'
     }
   ],
-  requiredEnv: []
+  requiredEnv: [],
+  configMessage: 'Google Calendar Not Connected',
+  configHint: 'Add GOOGLE_CREDENTIALS_PATH and GOOGLE_TOKEN_PATH to your configuration, and configure trash_day and reminders'
 };
 
 // Auto-register widget

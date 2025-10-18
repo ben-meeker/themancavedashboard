@@ -1,6 +1,9 @@
 .draggable-widget {
   position: relative;
   transition: all 0.2s ease;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .draggable-widget.edit-mode {
@@ -74,7 +77,12 @@
 
 .widget-content {
   height: 100%;
+  width: 100%;
   pointer-events: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .widget-content.edit-mode-content {

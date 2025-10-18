@@ -20,6 +20,8 @@ export interface WidgetMetadata {
   component: ComponentType;
   requiredConfig: ConfigRequirement[];
   requiredEnv?: ConfigRequirement[];
+  configMessage?: string;  // Message shown when not configured
+  configHint?: string;     // Hint for how to configure
 }
 
 // Global widget registry

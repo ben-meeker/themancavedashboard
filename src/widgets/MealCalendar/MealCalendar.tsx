@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './MealCalendar.css';
 import { fetchMealCalendarEvents } from '../Calendar/googleCalendarApi';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 
 interface Meal {
   day: string;
@@ -12,12 +12,34 @@ interface Meal {
 const MealCalendar: React.FC = () => {
   const [meals, setMeals] = useState<Meal[]>([]);
   const [loading, setLoading] = useState(true);
+  const [calendarUrl, setCalendarUrl] = useState<string | undefined>();
 
   // Get widget configuration
-  const config = getWidgetConfig('meals')!;
+  const metadata = getWidgetMetadata('meals');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
-  // Check if meal calendar is configured by attempting to fetch data
+  // Load calendar URL from layout
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const { loadLayout } = await import('../../services/layoutApi');
+        const layout = await loadLayout();
+        const mealsWidget = layout.widgets.find(w => w.widgetId === 'meals');
+        if (mealsWidget?.config?.calendar_url) {
+          setCalendarUrl(mealsWidget.config.calendar_url);
+        }
+      } catch (error) {
+        console.error('Error loading meal calendar config:', error);
+      }
+    };
+    loadConfig();
+  }, []);
+
+  // Check if meal calendar is configured
   const checkMealsConfig = async (): Promise<boolean> => {
+    if (!calendarUrl) {
+      return false;
+    }
     try {
       const events = await fetchMealCalendarEvents();
       return events !== null;
@@ -29,6 +51,11 @@ const MealCalendar: React.FC = () => {
 
   // Load meals
   const loadMeals = async () => {
+    if (!calendarUrl) {
+      setLoading(false);
+      return;
+    }
+    
     setLoading(true);
     try {
       console.log('[MealCalendar] Fetching meal events...');
@@ -73,13 +100,18 @@ const MealCalendar: React.FC = () => {
     }
   };
 
-  // Load meals when component mounts
+  // Load meals when component mounts and calendar URL is available
   useEffect(() => {
-    loadMeals();
-  }, []);
+    if (calendarUrl) {
+      loadMeals();
+    }
+  }, [calendarUrl]);
 
-  return (
-    <ConfigurableWidget
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
+
+  return (    <ConfigurableWidget
       config={config}
       checkConfig={checkMealsConfig}
       className="meals"

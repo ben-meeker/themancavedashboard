@@ -8,6 +8,7 @@ import (
 	"themancavedashboard/widgets/personal"
 	"themancavedashboard/widgets/photos"
 	"themancavedashboard/widgets/tesla"
+	"themancavedashboard/widgets/traeger"
 	"themancavedashboard/widgets/weather"
 )
 
@@ -21,6 +22,7 @@ func init() {
 	Register(&personal.PersonalWidget{})
 	Register(&photos.PhotosWidget{})
 	Register(&tesla.TeslaWidget{})
+	Register(&traeger.TraegerWidget{})
 	Register(&weather.WeatherWidget{})
 }
 

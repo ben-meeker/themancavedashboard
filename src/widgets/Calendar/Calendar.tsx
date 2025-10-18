@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 import { fetchGoogleCalendarEvents, isCalendarConnected, type ProcessedEvent } from './googleCalendarApi';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 import { loadLayout } from '../../services/layoutApi';
 
 interface Reminder {
@@ -22,8 +22,9 @@ const CalendarWidget: React.FC = () => {
     return await isCalendarConnected();
   };
 
-  // Get widget configuration
-  const widgetMetadata = getWidgetConfig('calendar')!;
+  // Get widget configuration from registry
+  const metadata = getWidgetMetadata('calendar');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
   // Load widget config from layout API
   useEffect(() => {
@@ -190,9 +191,13 @@ const CalendarWidget: React.FC = () => {
     return daysUntil;
   };
 
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
+
   return (
     <ConfigurableWidget
-      config={widgetMetadata}
+      config={config}
       checkConfig={checkCalendarConfig}
       className="calendar"
     >
@@ -216,8 +221,11 @@ const CalendarWidget: React.FC = () => {
                   const rgb = hexToRgb(color);
                   const backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.15)`;
                   
-                  return (
-                    <div 
+                  if (!config) {
+                    return <div>Widget configuration not found</div>;
+                  }
+
+                  return (                    <div 
                       key={index} 
                       className="reminder-countdown"
                       style={{ 
@@ -254,8 +262,11 @@ const CalendarWidget: React.FC = () => {
               ? getEventPosition(eventsByDay[day][0].id, day) 
               : null;
             
-            return (
-              <div
+            if (!config) {
+              return <div>Widget configuration not found</div>;
+            }
+
+            return (              <div
                 key={index}
                 className={`calendar-day ${day === null ? 'empty' : ''} ${
                   day === currentDate.getDate() ? 'today' : ''

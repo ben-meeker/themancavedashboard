@@ -8,7 +8,7 @@ export const widgetConfig: WidgetMetadata = {
   icon: '🍽️',
   defaultSize: {
     width: 1,
-    height: 2
+    height: 1
   },
   component: MealCalendar,
   requiredConfig: [
@@ -18,7 +18,9 @@ export const widgetConfig: WidgetMetadata = {
       description: 'The URL of your calendar'
     }
   ],
-  requiredEnv: []
+  requiredEnv: [],
+  configMessage: 'Meal Calendar Not Connected',
+  configHint: 'Add calendar_url to your widget configuration'
 };
 
 // Auto-register widget

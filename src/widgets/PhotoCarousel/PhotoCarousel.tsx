@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './PhotoCarousel.css';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 import { loadLayout } from '../../services/layoutApi';
 
 interface Photo {
@@ -16,7 +16,8 @@ const PhotoCarousel: React.FC = () => {
   const [rotationSeconds, setRotationSeconds] = useState(45);
 
   // Get widget configuration
-  const config = getWidgetConfig('photos')!;
+  const metadata = getWidgetMetadata('photos');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
   // Check if photos are available
   const checkPhotosConfig = async (): Promise<boolean> => {
@@ -108,8 +109,11 @@ const PhotoCarousel: React.FC = () => {
   }, [photos.length, rotationSeconds]);
 
   if (loading) {
-    return (
-      <ConfigurableWidget
+    if (!config) {
+      return <div>Widget configuration not found</div>;
+    }
+
+    return (      <ConfigurableWidget
         config={config}
         checkConfig={checkPhotosConfig}
         className="photo-carousel"
@@ -129,8 +133,11 @@ const PhotoCarousel: React.FC = () => {
   }
 
   if (photos.length === 0) {
-    return (
-      <ConfigurableWidget
+    if (!config) {
+      return <div>Widget configuration not found</div>;
+    }
+
+    return (      <ConfigurableWidget
         config={config}
         checkConfig={checkPhotosConfig}
         className="photo-carousel"
@@ -151,8 +158,11 @@ const PhotoCarousel: React.FC = () => {
     );
   }
 
-  return (
-    <ConfigurableWidget
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
+
+  return (    <ConfigurableWidget
       config={config}
       checkConfig={checkPhotosConfig}
       className="photo-carousel"

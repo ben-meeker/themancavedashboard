@@ -2,14 +2,15 @@ import React, { useState, useEffect } from 'react';
 import './Weather.css';
 import { fetchWeather, type WeatherData } from './weatherApi';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Get widget configuration
-  const config = getWidgetConfig('weather')!;
+  // Get widget configuration from registry
+  const metadata = getWidgetMetadata('weather');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
   // Check if weather is configured by attempting to fetch data
   const checkWeatherConfig = async (): Promise<boolean> => {
@@ -60,6 +61,10 @@ const Weather: React.FC = () => {
     };
     return conditions[condition] || '🌤️';
   };
+
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
 
   return (
     <ConfigurableWidget

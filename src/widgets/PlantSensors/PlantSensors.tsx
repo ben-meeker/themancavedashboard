@@ -7,7 +7,7 @@ import {
   type IndoorSensor
 } from './ecowittApi';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 
 const PlantSensors: React.FC = () => {
   const [sensors, setSensors] = useState<SoilMoistureSensor[]>([]);
@@ -15,7 +15,8 @@ const PlantSensors: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Get widget configuration
-  const config = getWidgetConfig('plants')!;
+  const metadata = getWidgetMetadata('plants');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
   // Check if plant sensors are configured by attempting to fetch data
   const checkPlantsConfig = async (): Promise<boolean> => {
@@ -72,8 +73,11 @@ const PlantSensors: React.FC = () => {
     return 'critical';
   };
 
-  return (
-    <ConfigurableWidget
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
+
+  return (    <ConfigurableWidget
       config={config}
       checkConfig={checkPlantsConfig}
       className="plants"
