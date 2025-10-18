@@ -69,7 +69,7 @@ func getDashboardLayout(w http.ResponseWriter, r *http.Request) {
 	globalMap := make(map[string]interface{})
 	globalBytes, _ := json.Marshal(config.Global)
 	json.Unmarshal(globalBytes, &globalMap)
-	
+
 	layout := DashboardLayout{
 		Version:      "2.0",
 		GridColumns:  config.Global.GridColumns,

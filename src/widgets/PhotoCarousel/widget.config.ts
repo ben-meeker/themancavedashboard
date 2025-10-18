@@ -16,11 +16,16 @@ export const widgetConfig: WidgetMetadata = {
       key: 'photo_rotation_seconds',
       label: 'Photo Rotation Interval',
       description: 'How many seconds between photo changes (default: 45)'
+    },
+    {
+      key: 'photos_folder',
+      label: 'Photos Folder (Optional)',
+      description: 'Name of photos folder within CONFIG_DIR (default: photos)'
     }
   ],
   requiredEnv: [],
   configMessage: 'Photos Not Available',
-  configHint: 'Add PHOTOS_PATH to your configuration and ensure photos are available'
+  configHint: 'Add photos to the photos/ folder in your CONFIG_DIR (e.g., ~/Desktop/mancave-config/photos/). Customize folder name in widget config with "photos_folder".'
 };
 
 // Auto-register widget

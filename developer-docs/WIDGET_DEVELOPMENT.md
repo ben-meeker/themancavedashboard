@@ -145,6 +145,79 @@ Widgets can use Redis for caching, rate limiting, or temporary storage:
   - `photos:last_rotation`
   - `calendar:events:cache`
 
+### Using Files and Folders in Widgets
+
+**IMPORTANT**: All widget files and folders must be stored inside the `CONFIG_DIR` (default: `/app/config`).
+
+#### Why CONFIG_DIR?
+- **Persistent**: Data survives container restarts
+- **Editable**: Users can easily access and modify files
+- **No bind mount issues**: Directory mounts are stable (files can be recreated safely)
+- **Centralized**: All dashboard data in one place
+
+#### Accessing Files from Backend
+
+1. **Use widget config for custom filenames/folders**:
+   ```go
+   import "themancavedashboard/shared"
+   
+   // Get custom filename from widget's config in config.json
+   filename := shared.GetWidgetConfigValue("mywidget", "data_filename", "default.json")
+   filepath := fmt.Sprintf("/app/config/%s", filename)
+   ```
+
+2. **Read files from CONFIG_DIR**:
+   ```go
+   data, err := os.ReadFile("/app/config/my-widget-data.json")
+   ```
+
+3. **List files in a folder**:
+   ```go
+   import "themancavedashboard/shared"
+   
+   photosFolder := shared.GetWidgetConfigValue("photos", "photos_folder", "photos")
+   photosPath := fmt.Sprintf("/app/config/%s", photosFolder)
+   files, err := os.ReadDir(photosPath)
+   ```
+
+#### Documenting File Requirements
+
+In your widget's README.md, document:
+- What files/folders are needed
+- Where they should be placed (always in CONFIG_DIR)
+- Optional widget config settings for custom names
+
+Example:
+```markdown
+## File Requirements
+
+Place your data files in `CONFIG_DIR/my-widget/`:
+- `data.json` - Widget configuration
+- `assets/` - Image assets
+
+### Widget Config
+
+```json
+{
+  "id": "mywidget",
+  "location": { "x": 0, "y": 0 },
+  "config": {
+    "data_folder": "my-widget"
+  }
+}
+```
+
+#### `data_folder` (optional)
+- **Type**: `string`
+- **Description**: Folder name within CONFIG_DIR
+- **Default**: `my-widget`
+```
+
+#### Examples from Built-in Widgets
+
+- **Photos Widget**: Uses `photos_folder` widget config (default: "photos")
+- **Calendar Widget**: Uses `google_credentials_filename` and `google_token_filename` widget config (defaults: "credentials.json", "token.json")
+
 ## 📁 Widget File Structure
 
 ### Frontend Structure

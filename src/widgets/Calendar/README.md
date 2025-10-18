@@ -11,11 +11,16 @@ Displays a monthly calendar with Google Calendar events, trash day reminders, an
 
 ## Configuration
 
-### Required Environment Variables
-```env
-# Google Calendar API credentials (mounted as files)
-GOOGLE_CREDENTIALS_PATH=/app/config/credentials.json
-GOOGLE_TOKEN_PATH=/app/config/token.json
+### Required Setup
+
+Google Calendar credentials should be placed in your `CONFIG_DIR`:
+
+```
+config/
+├── config.json
+├── credentials.json    ← Google OAuth credentials
+├── token.json         ← Google OAuth token
+└── photos/
 ```
 
 ### Widget Config (`config.json`)
@@ -42,7 +47,9 @@ GOOGLE_TOKEN_PATH=/app/config/token.json
         "date": "1990-05-15",
         "color": "#764ba2"
       }
-    ]
+    ],
+    "google_credentials_filename": "credentials.json",
+    "google_token_filename": "token.json"
   }
 }
 ```
@@ -62,6 +69,18 @@ GOOGLE_TOKEN_PATH=/app/config/token.json
   - `name` (string): Display name (can include emoji)
   - `date` (string): Date in `YYYY-MM-DD` format
   - `color` (string): Hex color code or CSS color name for border and number
+
+#### `google_credentials_filename` (optional)
+- **Type**: `string`
+- **Description**: Filename of Google OAuth credentials within `CONFIG_DIR`
+- **Default**: `credentials.json`
+- **Example**: Set to `my-credentials.json` to use a custom filename
+
+#### `google_token_filename` (optional)
+- **Type**: `string`
+- **Description**: Filename of Google OAuth token within `CONFIG_DIR`
+- **Default**: `token.json`
+- **Example**: Set to `my-token.json` to use a custom filename
 
 ## Size
 - **Default**: 4x4 grid cells

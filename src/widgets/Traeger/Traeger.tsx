@@ -90,51 +90,7 @@ const Traeger: React.FC = () => {
       const historyRes = await fetch(`/api/traeger/history?grill_name=${encodeURIComponent(grillName)}&duration=3600`);
       if (historyRes.ok) {
         const data = await historyRes.json();
-        const realHistory = data.history || [];
-        
-        // TEMPORARY: Generate mock data points for visualization
-        if (realHistory.length > 0) {
-          const mockHistory: HistoryPoint[] = [];
-          const now = Date.now() / 1000;
-          const startTime = now - 1800; // 30 minutes ago
-          
-          // Generate 30 data points over 30 minutes
-          for (let i = 0; i < 30; i++) {
-            const timestamp = startTime + (i * 60); // Every minute
-            const progress = i / 30;
-            
-            // Simulate grill heating up and stabilizing
-            const grillTemp = 100 + (progress * 150) + (Math.random() * 10 - 5);
-            const setTemp = 250;
-            
-            // Simulate probe 1 heating up slower
-            const probe1Temp = 50 + (progress * 130) + (Math.random() * 8 - 4);
-            
-            // Simulate probe 2 staying cool then heating
-            const probe2Temp = 35 + (progress > 0.5 ? (progress - 0.5) * 200 : 0) + (Math.random() * 5 - 2.5);
-            
-            mockHistory.push({
-              timestamp,
-              grill_temp: Math.max(100, Math.min(260, grillTemp)),
-              set_temp: setTemp,
-              pellet_level: 100 - (i * 2), // Pellets decreasing
-              probes: [
-                {
-                  get_temp: Math.max(50, Math.min(180, probe1Temp)),
-                  set_temp: 170
-                },
-                {
-                  get_temp: Math.max(35, Math.min(150, probe2Temp)),
-                  set_temp: 170
-                }
-              ]
-            });
-          }
-          
-          setHistory(mockHistory);
-        } else {
-          setHistory(realHistory);
-        }
+        setHistory(data.history || []);
       }
     } catch (err) {
       console.error('Error fetching grill data:', err);

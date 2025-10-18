@@ -17,9 +17,8 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Create necessary directories
-RUN mkdir -p /usr/share/nginx/html/photos && \
-    chmod -R 755 /usr/share/nginx/html
+# Set permissions
+RUN chmod -R 755 /usr/share/nginx/html
 
 # Expose port 80
 EXPOSE 80

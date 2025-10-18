@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 
+	"themancavedashboard/shared"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -238,60 +240,48 @@ func (w *EcowittWidget) getData(rw http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(rw).Encode(response)
 }
 
-// getSensorConfigs reads sensor configuration from config.json
-// TODO: This should access the main config system
-// Config structs to load sensor config from config.json
-type ecowittWidgetConfigEntry struct {
-	ID       string                 `json:"id"`
-	Location map[string]interface{} `json:"location"`
-	Config   map[string]interface{} `json:"config"`
-}
-
-type ecowittDashboardConfig struct {
-	Global  map[string]interface{}     `json:"global"`
-	Widgets []ecowittWidgetConfigEntry `json:"widgets"`
-}
-
+// getSensorConfigs reads sensor configuration from config.json using shared helper
 func (w *EcowittWidget) getSensorConfigs() map[string]SoilSensorConfig {
 	configs := make(map[string]SoilSensorConfig)
 
-	// Load from config.json
-	configPath := "/app/external-config.json"
-	configData, err := os.ReadFile(configPath)
+	// Read the entire widget config from config.json
+	configData, err := os.ReadFile("/app/config/config.json")
 	if err != nil {
 		return configs
 	}
 
-	var cfg ecowittDashboardConfig
-	if err := json.Unmarshal(configData, &cfg); err != nil {
+	var dashboardConfig shared.DashboardConfig
+	if err := json.Unmarshal(configData, &dashboardConfig); err != nil {
 		return configs
 	}
 
-	// Find plants widget
-	for _, widget := range cfg.Widgets {
-		if widget.ID == "plants" {
-			// Get sensors array from config
-			if sensorsInterface, ok := widget.Config["sensors"].([]interface{}); ok {
-				for _, sensorInterface := range sensorsInterface {
-					if sensorMap, ok := sensorInterface.(map[string]interface{}); ok {
-						channel, _ := sensorMap["channel"].(string)
-						name, _ := sensorMap["name"].(string)
+	// Find plants widget config
+	for _, widget := range dashboardConfig.Widgets {
+		if id, ok := widget["id"].(string); ok && id == "plants" {
+			if widgetConfig, ok := widget["config"].(map[string]interface{}); ok {
+				// Get sensors array from config
+				if sensorsInterface, ok := widgetConfig["sensors"].([]interface{}); ok {
+					for _, sensorInterface := range sensorsInterface {
+						if sensorMap, ok := sensorInterface.(map[string]interface{}); ok {
+							channel, _ := sensorMap["channel"].(string)
+							name, _ := sensorMap["name"].(string)
 
-						var idealMin, idealMax float64
-						if minVal, ok := sensorMap["ideal_min"].(float64); ok {
-							idealMin = minVal
-						}
-						if maxVal, ok := sensorMap["ideal_max"].(float64); ok {
-							idealMax = maxVal
-						}
+							var idealMin, idealMax float64
+							if minVal, ok := sensorMap["ideal_min"].(float64); ok {
+								idealMin = minVal
+							}
+							if maxVal, ok := sensorMap["ideal_max"].(float64); ok {
+								idealMax = maxVal
+							}
 
-						if channel != "" {
-							configs[channel] = SoilSensorConfig{
-								Channel:     channel,
-								Name:        name,
-								Location:    "", // Not used
-								MinMoisture: idealMin,
-								MaxMoisture: idealMax,
+							if channel != "" {
+								configs[channel] = SoilSensorConfig{
+									Channel:     channel,
+									Name:        name,
+									Location:    "", // Not used
+									MinMoisture: idealMin,
+									MaxMoisture: idealMax,
+								}
 							}
 						}
 					}

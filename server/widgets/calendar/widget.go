@@ -8,6 +8,8 @@ import (
 	"os"
 	"time"
 
+	"themancavedashboard/shared"
+
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -79,8 +81,10 @@ func (w *CalendarWidget) RegisterRoutes(r chi.Router) {
 
 // getEvents handles GET /api/calendar/events
 func (w *CalendarWidget) getEvents(rw http.ResponseWriter, r *http.Request) {
-	// Read token.json from mounted volume
-	tokenData, err := os.ReadFile("/app/token.json")
+	// Get token filename from widget config, default to token.json
+	tokenFilename := shared.GetWidgetConfigValue("calendar", "google_token_filename", "token.json")
+	tokenPath := fmt.Sprintf("/app/config/%s", tokenFilename)
+	tokenData, err := os.ReadFile(tokenPath)
 	if err != nil {
 		http.Error(rw, `{"error":"Google Calendar not configured"}`, http.StatusServiceUnavailable)
 		return
@@ -170,8 +174,10 @@ func (w *CalendarWidget) getEvents(rw http.ResponseWriter, r *http.Request) {
 
 // getGoogleClientID handles GET /api/google/client-id
 func (w *CalendarWidget) getGoogleClientID(rw http.ResponseWriter, r *http.Request) {
-	// Try to read from credentials.json file first
-	if data, err := os.ReadFile("/app/credentials.json"); err == nil {
+	// Get credentials filename from widget config, default to credentials.json
+	credentialsFilename := shared.GetWidgetConfigValue("calendar", "google_credentials_filename", "credentials.json")
+	credentialsPath := fmt.Sprintf("/app/config/%s", credentialsFilename)
+	if data, err := os.ReadFile(credentialsPath); err == nil {
 		var creds GoogleCredentials
 		if err := json.Unmarshal(data, &creds); err == nil && creds.Web.ClientID != "" {
 			rw.Header().Set("Content-Type", "application/json")
@@ -197,8 +203,10 @@ func (w *CalendarWidget) getGoogleClientID(rw http.ResponseWriter, r *http.Reque
 
 // getGoogleTokenStatus handles GET /api/google/token-status
 func (w *CalendarWidget) getGoogleTokenStatus(rw http.ResponseWriter, r *http.Request) {
-	// Try to read token.json from mounted location
-	data, err := os.ReadFile("/app/token.json")
+	// Get token filename from widget config, default to token.json
+	tokenFilename := shared.GetWidgetConfigValue("calendar", "google_token_filename", "token.json")
+	tokenPath := fmt.Sprintf("/app/config/%s", tokenFilename)
+	data, err := os.ReadFile(tokenPath)
 	if err != nil {
 		// Token doesn't exist
 		rw.Header().Set("Content-Type", "application/json")

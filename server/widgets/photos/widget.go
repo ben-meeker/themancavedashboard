@@ -2,10 +2,13 @@ package photos
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"themancavedashboard/shared"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -27,7 +30,9 @@ func (w *PhotosWidget) GetRequiredEnvVars() []string {
 
 // Initialize loads configuration
 func (w *PhotosWidget) Initialize() error {
-	w.photosDir = "/usr/share/nginx/html/photos"
+	// Get photos folder from widget config, default to "photos"
+	photosFolder := shared.GetWidgetConfigValue("photos", "photos_folder", "photos")
+	w.photosDir = fmt.Sprintf("/app/config/%s", photosFolder)
 	return nil
 }
 
