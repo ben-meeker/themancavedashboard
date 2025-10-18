@@ -7,5 +7,24 @@
     "grid_columns": 6,
     "grid_rows": 4
   },
-  "widgets": []
+  "widgets": [
+    {
+      "id": "calendar",
+      "location": { "x": 0, "y": 0, "width": 4, "height": 4 },
+      "config": {
+        "trash_day": "Thursday",
+        "reminders": [],
+        "google_credentials_filename": "credentials.json",
+        "google_token_filename": "token.json"
+      }
+    },
+    {
+      "id": "photos",
+      "location": { "x": 5, "y": 0, "width": 1, "height": 2 },
+      "config": {
+        "photo_rotation_seconds": 45,
+        "photos_folder": "photos"
+      }
+    }
+  ]
 }

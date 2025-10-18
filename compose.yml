@@ -28,13 +28,8 @@ services:
       - PORT=8080
       - REDIS_URL=redis://redis:6379
     volumes:
-      # Google OAuth files (if using file-based credentials)
-      - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
-      - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
-      # Mount config directory (better than file mount for editors that atomic-write)
-      - ${CONFIG_PATH:-./config.json}:/app/external-config.json:delegated
-      # Mount photos directory (backend needs to list photos)
-      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+      # This includes config.json, and all widget config files/folders
+      - ${CONFIG_DIR:-./config}:/app/config:delegated
     restart: unless-stopped
     depends_on:
       redis:
@@ -57,8 +52,8 @@ services:
     ports:
       - "3000:80"
     volumes:
-      # Mount photos directory from host machine
-      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+      # Mount config directory to access photos
+      - ${CONFIG_DIR:-./config}:/app/config:ro
     restart: unless-stopped
     depends_on:
       backend:

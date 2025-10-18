@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"themancavedashboard/shared"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -25,18 +27,6 @@ type MealEvent struct {
 	Start  string `json:"start"`
 	End    string `json:"end"`
 	AllDay bool   `json:"allDay"`
-}
-
-// Config structs to load calendar_url from config.json
-type mealWidgetConfigEntry struct {
-	ID       string                 `json:"id"`
-	Location map[string]interface{} `json:"location"`
-	Config   map[string]interface{} `json:"config"`
-}
-
-type mealDashboardConfig struct {
-	Global  map[string]interface{}  `json:"global"`
-	Widgets []mealWidgetConfigEntry `json:"widgets"`
 }
 
 // ID returns the widget identifier
@@ -63,25 +53,7 @@ func (w *MealsWidget) RegisterRoutes(r chi.Router) {
 // getData handles GET /api/meals
 func (w *MealsWidget) getData(rw http.ResponseWriter, r *http.Request) {
 	// Get calendar_url from widget config
-	var icalURL string
-
-	// Try to load from config.json (always use container path, not host path)
-	configPath := "/app/external-config.json"
-
-	configData, err := os.ReadFile(configPath)
-	if err == nil {
-		var cfg mealDashboardConfig
-		if err := json.Unmarshal(configData, &cfg); err == nil {
-			for _, widget := range cfg.Widgets {
-				if widget.ID == "meals" {
-					if urlVal, ok := widget.Config["calendar_url"].(string); ok {
-						icalURL = urlVal
-					}
-					break
-				}
-			}
-		}
-	}
+	icalURL := shared.GetWidgetConfigValue("meals", "calendar_url", "")
 
 	// Fall back to env var if not in config
 	if icalURL == "" {

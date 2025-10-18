@@ -42,7 +42,8 @@ type DashboardConfig struct {
 var (
 	dashboardConfig    DashboardConfig
 	configLock         sync.RWMutex
-	externalConfigFile = "/app/external-config.json"
+	configDir          = "/app/config"
+	externalConfigFile = "/app/config/config.json"
 )
 
 // Load configuration from file or environment variables
@@ -50,8 +51,8 @@ func loadConfig() {
 	configLock.Lock()
 	defer configLock.Unlock()
 
-	// Ensure config directory exists
-	os.MkdirAll("/app/config", 0755)
+	// Config directory should be mounted from host
+	// No need to create it
 
 	// Try to load from external config file first (user's config.json)
 	if data, err := os.ReadFile(externalConfigFile); err == nil {
@@ -129,6 +130,7 @@ func getDashboardConfig() DashboardConfig {
 	defer configLock.Unlock()
 
 	// Reload config from file on every request
+	// With directory mounts, file changes are always reflected
 	if data, err := os.ReadFile(externalConfigFile); err == nil {
 		var tempConfig DashboardConfig
 		if err := json.Unmarshal(data, &tempConfig); err == nil {
@@ -178,4 +180,19 @@ func getWidgetConfig(widgetID string) (map[string]interface{}, bool) {
 		}
 	}
 	return nil, false
+}
+
+// GetGlobalConfigValue gets a value from global config (exported for widgets)
+func GetGlobalConfigValue(key string, defaultValue string) string {
+	config := getDashboardConfig()
+
+	// Convert Global struct to map for easier access
+	globalMap := make(map[string]interface{})
+	data, _ := json.Marshal(config.Global)
+	json.Unmarshal(data, &globalMap)
+
+	if value, ok := globalMap[key].(string); ok && value != "" {
+		return value
+	}
+	return defaultValue
 }

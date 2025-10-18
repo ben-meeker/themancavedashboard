@@ -21,11 +21,21 @@ export const widgetConfig: WidgetMetadata = {
       key: 'reminders',
       label: 'Reminders',
       description: 'Array of reminder objects with name and date'
+    },
+    {
+      key: 'google_credentials_filename',
+      label: 'Google Credentials Filename (Optional)',
+      description: 'Filename within CONFIG_DIR (default: credentials.json)'
+    },
+    {
+      key: 'google_token_filename',
+      label: 'Google Token Filename (Optional)',
+      description: 'Filename within CONFIG_DIR (default: token.json)'
     }
   ],
   requiredEnv: [],
   configMessage: 'Google Calendar Not Connected',
-  configHint: 'Add GOOGLE_CREDENTIALS_PATH and GOOGLE_TOKEN_PATH to your configuration, and configure trash_day and reminders'
+  configHint: 'Add credentials.json and token.json to your CONFIG_DIR, and configure trash_day and reminders. Customize filenames in widget config with "google_credentials_filename" and "google_token_filename".'
 };
 
 // Auto-register widget

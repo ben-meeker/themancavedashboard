@@ -11,13 +11,20 @@ Displays a rotating carousel of photos from a mounted directory.
 
 ## Configuration
 
-### Required Volume Mount
-```yaml
-volumes:
-  - ./public/photos:/app/public/photos
-```
+### Required Setup
 
-Place your photos in the `public/photos` directory on your host machine.
+Photos should be placed in the `photos/` folder inside your `CONFIG_DIR`:
+
+```
+config/
+├── config.json
+├── credentials.json
+├── token.json
+└── photos/           ← Add your photos here
+    ├── photo1.jpg
+    ├── photo2.png
+    └── ...
+```
 
 ### Widget Config (`config.json`)
 ```json
@@ -30,7 +37,8 @@ Place your photos in the `public/photos` directory on your host machine.
     "height": 2
   },
   "config": {
-    "photo_rotation_seconds": 45
+    "photo_rotation_seconds": 45,
+    "photos_folder": "photos"
   }
 }
 ```
@@ -42,6 +50,12 @@ Place your photos in the `public/photos` directory on your host machine.
 - **Description**: How many seconds to display each photo before rotating to the next
 - **Default**: `45`
 - **Example**: `30` for 30 seconds, `60` for 1 minute
+
+#### `photos_folder` (optional)
+- **Type**: `string`
+- **Description**: Name of the photos folder within `CONFIG_DIR`
+- **Default**: `photos`
+- **Example**: Set to `my-photos` to use `config/my-photos/` instead
 
 ## Size
 - **Default**: 2x2 grid cells
@@ -55,10 +69,10 @@ Place your photos in the `public/photos` directory on your host machine.
 - `.webp`
 
 ## How to Add Photos
-1. Create a `public/photos` directory in your project root
-2. Add your photos to this directory
-3. The widget will automatically detect and display them
-4. No restart required - photos are loaded dynamically
+1. Navigate to your `CONFIG_DIR` (e.g., `~/Desktop/mancave-config/`)
+2. Add photos to the `photos/` folder (or your custom `PHOTOS_FOLDER`)
+3. Photos are automatically detected and displayed
+4. **No restart required** - new photos appear immediately!
 
 ## API Endpoints Used
 - `GET /api/photos` - List available photos from mounted directory
