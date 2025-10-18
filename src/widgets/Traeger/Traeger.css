@@ -1,0 +1,131 @@
+/* Traeger widget uses standard card-header and card-content classes */
+
+.traeger-temps {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.traeger-temp-main {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.traeger-temp-current {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #ff6b35;
+  line-height: 1;
+}
+
+.traeger-temp-set {
+  font-size: 1.1rem;
+  color: #888;
+  font-weight: 500;
+}
+
+.traeger-probes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+}
+
+.traeger-probe {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.traeger-probe-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  opacity: 0.7;
+  font-size: 0.65rem;
+}
+
+.traeger-probe-temp {
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.traeger-graph {
+  height: 50px;
+  margin: 0.3rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.traeger-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.8;
+}
+
+.traeger-pellets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.4rem 0;
+}
+
+.traeger-pellet-bar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.traeger-pellet-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b4513, #d2691e);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.traeger-pellet-label {
+  font-size: 0.7rem;
+  color: #888;
+  text-align: center;
+}
+
+.traeger-error,
+.traeger-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.traeger-error p:first-child {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.traeger-error-detail {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.traeger-loading {
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+/* Night mode adjustments */
+.night-mode .traeger-widget {
+  opacity: 0.3;
+}
+
+.night-mode .traeger-temp-current {
+  color: #ff8c5a;
+}
+

@@ -29,7 +29,9 @@ export const widgetConfig: WidgetMetadata = {
       label: 'Tesla VIN',
       description: 'Your Tesla vehicle identification number'
     }
-  ]
+  ],
+  configMessage: 'Tesla Not Connected',
+  configHint: 'Add TESSIE_API_KEY and TESSIE_VIN to your .env configuration'
 };
 
 // Auto-register widget

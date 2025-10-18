@@ -1,0 +1,84 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: mancave-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      # Persist Redis data
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - dashboard-network
+
+  backend:
+    image: bemeeker/themancavedashboard-backend:latest
+    build:
+      context: ./server
+      dockerfile: Dockerfile.backend
+    container_name: mancave-backend
+    env_file:
+      - .env
+    environment:
+      - PORT=8080
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      # Google OAuth files (if using file-based credentials)
+      - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
+      - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
+      # Mount config directory (better than file mount for editors that atomic-write)
+      - ${CONFIG_PATH:-./config.json}:/app/external-config.json:delegated
+      # Mount photos directory (backend needs to list photos)
+      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - dashboard-network
+
+  frontend:
+    image: bemeeker/themancavedashboard-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: mancave-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      # Mount photos directory from host machine
+      - ${PHOTOS_PATH:-./public/photos}:/usr/share/nginx/html/photos:ro
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - dashboard-network
+
+networks:
+  dashboard-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+

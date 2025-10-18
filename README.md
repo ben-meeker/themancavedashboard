@@ -81,10 +81,13 @@ Create your `config.json`:
 }
 ```
 
-Create your `.env` file with API credentials:
+Create your `.env` file with API credentials (see `env.example` for complete reference):
 ```env
-# Timezone
-TZ=America/Denver
+# File paths (optional overrides)
+CONFIG_PATH=./config.json
+GOOGLE_CREDENTIALS_PATH=./credentials.json
+GOOGLE_TOKEN_PATH=./token.json
+PHOTOS_PATH=./photos
 
 # API Credentials (only add the ones you need)
 TESSIE_API_KEY=your_tessie_api_key
@@ -98,27 +101,84 @@ ECOWITT_APPLICATION_KEY=your_ecowitt_app_key
 ECOWITT_GATEWAY_MAC=your_gateway_mac
 ```
 
-Create your `docker-compose.yml`:
+Create your `compose.yml`:
 ```yaml
 services:
-  dashboard:
-    image: bemeeker/themancavedashboard:latest
-    container_name: mancave-dashboard
-    ports:
-      - "3000:80"
+  redis:
+    image: redis:7-alpine
+    container_name: mancave-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - dashboard-network
+
+  backend:
+    image: bemeeker/themancavedashboard-backend:latest
+    container_name: mancave-backend
     env_file:
       - .env
     environment:
       - PORT=8080
+      - REDIS_URL=redis://redis:6379
     volumes:
       # Google OAuth files (if using Google Calendar)
       - ${GOOGLE_CREDENTIALS_PATH:-./credentials.json}:/app/credentials.json:ro
       - ${GOOGLE_TOKEN_PATH:-./token.json}:/app/token.json:ro
       # Main config file (read-write so layout can be saved)
-      - ${CONFIG_PATH:-./config.json}:/app/external-config.json
-      # Photos directory
+      - ${CONFIG_PATH:-./config.json}:/app/external-config.json:delegated
+      # Photos directory (backend needs to list photos)
       - ${PHOTOS_PATH:-./photos}:/usr/share/nginx/html/photos:ro
     restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - dashboard-network
+
+  frontend:
+    image: bemeeker/themancavedashboard-frontend:latest
+    container_name: mancave-frontend
+    ports:
+      - "3000:80"
+    volumes:
+      # Photos directory (frontend serves the photos)
+      - ${PHOTOS_PATH:-./photos}:/usr/share/nginx/html/photos:ro
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - dashboard-network
+
+networks:
+  dashboard-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
 ```
 
 ### Step 2: Add Photos (Optional)
@@ -132,10 +192,15 @@ cp ~/Pictures/*.jpg photos/
 ### Step 3: Start the Dashboard
 
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 Visit `http://localhost:3000` 🎉
+
+The dashboard consists of three services:
+- **Redis**: Shared cache for widgets (port 6379, internal only)
+- **Backend**: Go API server (port 8080, internal only)
+- **Frontend**: React app served by nginx (port 3000, exposed)
 
 ## 🎨 Customizing Your Dashboard
 
@@ -170,6 +235,24 @@ All available widgets are automatically discovered. Simply:
 
 ## 🏗️ Architecture
 
+The dashboard uses a microservices architecture with three containers:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Docker Network                        │
+│                                                          │
+│  ┌──────────┐      ┌──────────┐      ┌──────────┐     │
+│  │ Frontend │─────▶│ Backend  │─────▶│  Redis   │     │
+│  │  (nginx) │      │   (Go)   │      │ (cache)  │     │
+│  │  :3000   │      │  :8080   │      │  :6379   │     │
+│  └──────────┘      └──────────┘      └──────────┘     │
+│       │                  │                              │
+└───────┼──────────────────┼──────────────────────────────┘
+        │                  │
+    [Photos]          [Config, OAuth]
+```
+
+**File Structure:**
 ```
 themancavedashboard/
 ├── src/                    # React frontend
@@ -191,7 +274,9 @@ themancavedashboard/
 │       ├── weather/
 │       └── ...
 │
-└── docker-compose.yml      # Easy deployment
+├── compose.yml             # Multi-container deployment
+├── Dockerfile.frontend     # Frontend container build
+└── server/Dockerfile       # Backend container build
 ```
 
 ## 🔧 Configuration Reference
@@ -223,14 +308,15 @@ See the example `config.json` above for widget-specific options.
 ## 🐛 Troubleshooting
 
 **Dashboard not loading?**
-- Check `docker logs mancave-dashboard`
+- Check logs: `docker compose logs backend` or `docker compose logs frontend`
 - Verify your `config.json` is valid JSON
 - Ensure your `.env` file has the correct API keys
+- Check all services are healthy: `docker compose ps`
 
 **Widget shows "Not Configured"?**
 - Add required config to `config.json` under that widget
 - Add required API keys to `.env`
-- Restart: `docker-compose restart`
+- Restart: `docker compose restart backend`
 
 **Photos not showing?**
 - Ensure photos are in the `photos/` folder
@@ -244,8 +330,13 @@ See the example `config.json` above for widget-specific options.
 
 **Config changes not taking effect?**
 - Hard refresh your browser (Cmd+Shift+R on Mac, Ctrl+Shift+F5 on Windows)
-- If still not working: `docker-compose restart`
+- If still not working: `docker compose restart backend`
 - **Note**: Some text editors (VS Code, Vim, etc.) use "atomic writes" which can break Docker bind mounts. If you edit `config.json` and changes don't appear, restart the container to re-establish the mount.
+
+**Redis connection issues?**
+- Check Redis is healthy: `docker compose ps redis`
+- View Redis logs: `docker compose logs redis`
+- Test connection: `docker exec mancave-redis redis-cli ping` (should return "PONG")
 
 ### Adding a New Widget
 

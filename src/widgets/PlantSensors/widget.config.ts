@@ -28,7 +28,9 @@ export const widgetConfig: WidgetMetadata = {
       label: 'Gateway MAC Address',
       description: 'Your Ecowitt gateway MAC address'
     }
-  ]
+  ],
+  configMessage: 'Plant Sensors Not Connected',
+  configHint: 'Add ECOWITT_API_KEY, ECOWITT_APPLICATION_KEY, and ECOWITT_GATEWAY_MAC to your .env configuration'
 };
 
 // Auto-register widget

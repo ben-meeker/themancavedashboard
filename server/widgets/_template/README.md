@@ -111,6 +111,64 @@ func (w *MyWidget) Initialize() error {
 }
 ```
 
+## Using Redis
+
+Widgets can use Redis for caching, rate limiting, or temporary storage:
+
+```go
+import (
+	"context"
+	"time"
+	"github.com/redis/go-redis/v9"
+)
+
+type MyWidget struct {
+	redis *redis.Client
+}
+
+func (w *MyWidget) Initialize() error {
+	// Connect to Redis
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL != "" {
+		opt, err := redis.ParseURL(redisURL)
+		if err != nil {
+			return err
+		}
+		w.redis = redis.NewClient(opt)
+	}
+	return nil
+}
+
+func (w *MyWidget) getData(rw http.ResponseWriter, r *http.Request) {
+	ctx := context.Background()
+	
+	// IMPORTANT: Always prefix keys with your widget name
+	cacheKey := "mywidget:data"  // Good: prevents collisions
+	
+	// Try cache first
+	cached, err := w.redis.Get(ctx, cacheKey).Result()
+	if err == nil {
+		rw.Write([]byte(cached))
+		return
+	}
+	
+	// Fetch fresh data
+	data := fetchFromAPI()
+	
+	// Cache for 5 minutes
+	w.redis.Set(ctx, cacheKey, data, 5*time.Minute)
+	
+	rw.Write([]byte(data))
+}
+```
+
+**Redis Key Naming Convention**:
+- Format: `widgetname:key:subkey`
+- Examples:
+  - `mywidget:cache:user123`
+  - `mywidget:ratelimit:192.168.1.1`
+  - `mywidget:data:latest`
+
 ## Best Practices
 
 - **Keep it self-contained**: All widget logic in its own folder
@@ -119,6 +177,7 @@ func (w *MyWidget) Initialize() error {
 - **Use config.json for settings**: User-configurable values
 - **Log important events**: Help with debugging
 - **Validate inputs**: Always validate request data
+- **Prefix Redis keys**: Always use `widgetname:` prefix to avoid collisions
 
 ## Testing Your Widget
 
@@ -129,12 +188,17 @@ func (w *MyWidget) Initialize() error {
 
 2. Rebuild and restart:
    ```bash
-   docker-compose build && docker-compose up -d
+   docker compose build && docker compose up -d
    ```
 
 3. Test endpoint:
    ```bash
    curl http://localhost:3000/api/mywidget
+   ```
+
+4. Test Redis connection (if using):
+   ```bash
+   docker exec mancave-backend sh -c 'apk add redis && redis-cli -u $REDIS_URL ping'
    ```
 
 ## Examples

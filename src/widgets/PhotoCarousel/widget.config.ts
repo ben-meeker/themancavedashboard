@@ -18,7 +18,9 @@ export const widgetConfig: WidgetMetadata = {
       description: 'How many seconds between photo changes (default: 45)'
     }
   ],
-  requiredEnv: []
+  requiredEnv: [],
+  configMessage: 'Photos Not Available',
+  configHint: 'Add PHOTOS_PATH to your configuration and ensure photos are available'
 };
 
 // Auto-register widget

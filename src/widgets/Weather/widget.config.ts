@@ -28,7 +28,9 @@ export const widgetConfig: WidgetMetadata = {
       label: 'Longitude',
       description: 'Your location longitude'
     }
-  ]
+  ],
+  configMessage: 'Weather Not Connected',
+  configHint: 'Add OPENWEATHER_API_KEY, WEATHER_LAT, and WEATHER_LON to your .env configuration'
 };
 
 // Auto-register widget

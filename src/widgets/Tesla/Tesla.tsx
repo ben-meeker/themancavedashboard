@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './Tesla.css';
 import { fetchTeslaStatus } from './tessieApi';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
-import { getWidgetConfig } from '../../config/widgetConfigs';
+import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
 import { loadLayout } from '../../services/layoutApi';
 
 const Tesla: React.FC = () => {
@@ -11,8 +11,9 @@ const Tesla: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [teslaName, setTeslaName] = useState<string | undefined>();
 
-  // Get widget configuration
-  const config = getWidgetConfig('tesla')!;
+  // Get widget configuration from registry
+  const metadata = getWidgetMetadata('tesla');
+  const config = metadata ? widgetMetadataToLegacyConfig(metadata) : null;
 
   // Check if Tesla is configured by attempting to fetch data
   const checkTeslaConfig = async (): Promise<boolean> => {
@@ -59,6 +60,10 @@ const Tesla: React.FC = () => {
   useEffect(() => {
     loadTeslaStatus();
   }, []);
+
+  if (!config) {
+    return <div>Widget configuration not found</div>;
+  }
 
   return (
     <ConfigurableWidget
