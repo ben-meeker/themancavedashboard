@@ -11,39 +11,22 @@ export interface WeatherData {
 }
 
 export const fetchWeather = async (): Promise<WeatherData> => {
-  try {
-    const response = await fetch('/api/weather');
+  const response = await fetch('/api/weather');
 
-    if (!response.ok) {
-      throw new Error(`Backend API error: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    return {
-      temp: data.temp,
-      feelsLike: data.feelsLike,
-      condition: data.condition,
-      humidity: data.humidity,
-      windSpeed: data.windSpeed,
-      high: data.high,
-      low: data.low,
-    };
-  } catch (error) {
-    console.error('Error fetching weather:', error);
-    return getPlaceholderWeather();
+  if (!response.ok) {
+    throw new Error(`Backend API error: ${response.statusText}`);
   }
-};
 
-const getPlaceholderWeather = (): WeatherData => {
+  const data = await response.json();
+
   return {
-    temp: 72,
-    feelsLike: 70,
-    condition: 'Clear',
-    humidity: 45,
-    windSpeed: 8,
-    high: 78,
-    low: 65,
+    temp: data.temp,
+    feelsLike: data.feelsLike,
+    condition: data.condition,
+    humidity: data.humidity,
+    windSpeed: data.windSpeed,
+    high: data.high,
+    low: data.low,
   };
 };
 

@@ -33,6 +33,7 @@ const Traeger: React.FC = () => {
   const [status, setStatus] = useState<GrillStatus | null>(null);
   const [history, setHistory] = useState<HistoryPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Get widget configuration from registry
@@ -41,9 +42,15 @@ const Traeger: React.FC = () => {
 
   // Check if Traeger is configured by attempting to fetch data
   const checkTraegerConfig = async (): Promise<boolean> => {
-    if (!grillName) return false;
     try {
-      const statusRes = await fetch(`/api/traeger?grill_name=${encodeURIComponent(grillName)}`);
+      // Load config to get grill name
+      const layout = await loadLayout();
+      const traegerWidget = layout.widgets.find(w => w.widgetId === 'traeger');
+      const configGrillName = traegerWidget?.config?.grill_name as string;
+      
+      if (!configGrillName) return false;
+      
+      const statusRes = await fetch(`/api/traeger?grill_name=${encodeURIComponent(configGrillName)}`);
       return statusRes.ok;
     } catch (error) {
       console.error('Error checking Traeger configuration:', error);
@@ -75,14 +82,20 @@ const Traeger: React.FC = () => {
     }
     
     setLoading(true);
+    setError(null);
     try {
       // Fetch current status
       const statusRes = await fetch(`/api/traeger?grill_name=${encodeURIComponent(grillName)}`);
       if (statusRes.ok) {
         const data = await statusRes.json();
         setStatus(data);
+        setError(null);
       } else {
-        console.error('Failed to fetch grill status:', await statusRes.text());
+        const errorData = await statusRes.json().catch(() => ({ error: 'Unknown error' }));
+        if (errorData.error && errorData.error.includes('not found')) {
+          setError(errorData.error);
+        }
+        console.error('Failed to fetch grill status:', errorData);
         setStatus(null);
       }
 
@@ -271,6 +284,11 @@ const Traeger: React.FC = () => {
         <div className="loading">
           <div className="loading-spinner"></div>
           <span>Loading...</span>
+        </div>
+      ) : error ? (
+        <div className="no-data">
+          <span className="no-data-icon">⚠️</span>
+          <p>{error}</p>
         </div>
       ) : status ? (
         <>

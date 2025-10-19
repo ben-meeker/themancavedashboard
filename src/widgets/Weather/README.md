@@ -13,15 +13,18 @@ Displays current outdoor weather conditions using the OpenWeatherMap API.
 ## Configuration
 
 ### Required Environment Variables
+
+Add to your `.env` file:
 ```env
 OPENWEATHER_API_KEY=your-openweathermap-api-key
 ```
 
 ### Widget Config (`config.json`)
+
+Add to your `config.json` widgets array:
 ```json
 {
-  "id": "weather-400",
-  "widgetId": "weather",
+  "id": "weather",
   "location": {
     "x": 0,
     "y": 0,
@@ -29,25 +32,31 @@ OPENWEATHER_API_KEY=your-openweathermap-api-key
     "height": 1
   },
   "config": {
-    "lat": "40.7128",
-    "lon": "-74.0060"
+    "latitude": "40.7128",
+    "longitude": "-74.0060",
+    "location_name": "New York, NY"
   }
 }
 ```
 
 ### Config Parameters
 
-#### `lat` (required)
-- **Type**: `string`
+#### `latitude` (required)
+- **Type**: `string` or `number`
 - **Description**: Latitude for weather location
-- **Example**: `"40.7128"` (New York City)
+- **Example**: `"40.7128"` or `40.7128` (New York City)
 - **Note**: Can also be set via `WEATHER_LAT` environment variable as fallback
 
-#### `lon` (required)
-- **Type**: `string`
+#### `longitude` (required)
+- **Type**: `string` or `number`
 - **Description**: Longitude for weather location
-- **Example**: `"-74.0060"` (New York City)
+- **Example**: `"-74.0060"` or `-74.0060` (New York City)
 - **Note**: Can also be set via `WEATHER_LON` environment variable as fallback
+
+#### `location_name` (optional)
+- **Type**: `string`
+- **Description**: Display name for the location (not currently shown in UI, but useful for config organization)
+- **Example**: `"New York, NY"`, `"Denver, CO"`
 
 ## Size
 - **Default**: 1x1 grid cell

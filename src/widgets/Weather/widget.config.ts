@@ -11,26 +11,32 @@ export const widgetConfig: WidgetMetadata = {
     height: 1
   },
   component: Weather,
-  requiredConfig: [],
+  requiredConfig: [
+    {
+      key: 'latitude',
+      label: 'Latitude',
+      description: 'Your location latitude (e.g., 39.7392)'
+    },
+    {
+      key: 'longitude',
+      label: 'Longitude',
+      description: 'Your location longitude (e.g., -104.9903)'
+    },
+    {
+      key: 'location_name',
+      label: 'Location Name (Optional)',
+      description: 'Display name for your location (e.g., "Denver, CO")'
+    }
+  ],
   requiredEnv: [
     {
       key: 'OPENWEATHER_API_KEY',
       label: 'OpenWeather API Key',
       description: 'Get your free API key from https://openweathermap.org/api'
-    },
-    {
-      key: 'WEATHER_LAT',
-      label: 'Latitude',
-      description: 'Your location latitude'
-    },
-    {
-      key: 'WEATHER_LON',
-      label: 'Longitude',
-      description: 'Your location longitude'
     }
   ],
-  configMessage: 'Weather Not Connected',
-  configHint: 'Add OPENWEATHER_API_KEY, WEATHER_LAT, and WEATHER_LON to your .env configuration'
+  configMessage: 'Weather Not Configured',
+  configHint: 'Add latitude and longitude to widget config, and OPENWEATHER_API_KEY to .env'
 };
 
 // Auto-register widget

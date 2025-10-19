@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"os"
 
+	"themancavedashboard/shared"
+
 	"github.com/go-chi/chi/v5"
 )
 
@@ -46,18 +48,6 @@ type OpenWeatherResponse struct {
 	} `json:"wind"`
 }
 
-// Config structs to load lat/lon from config.json
-type weatherWidgetConfigEntry struct {
-	ID       string                 `json:"id"`
-	Location map[string]interface{} `json:"location"`
-	Config   map[string]interface{} `json:"config"`
-}
-
-type weatherDashboardConfig struct {
-	Global  map[string]interface{}     `json:"global"`
-	Widgets []weatherWidgetConfigEntry `json:"widgets"`
-}
-
 // ID returns the widget identifier
 func (w *WeatherWidget) ID() string {
 	return "weather"
@@ -83,35 +73,9 @@ func (w *WeatherWidget) RegisterRoutes(r chi.Router) {
 
 // getData handles GET /api/weather
 func (w *WeatherWidget) getData(rw http.ResponseWriter, r *http.Request) {
-	// Get lat/lon from widget config
-	var lat, lon string
-
-	// Try to load from config.json (always use container path, not host path)
-	configPath := "/app/external-config.json"
-
-	configData, err := os.ReadFile(configPath)
-	if err == nil {
-		var cfg weatherDashboardConfig
-		if err := json.Unmarshal(configData, &cfg); err == nil {
-			for _, widget := range cfg.Widgets {
-				if widget.ID == "weather" {
-					// Handle lat as string or number
-					if latVal, ok := widget.Config["lat"].(string); ok {
-						lat = latVal
-					} else if latVal, ok := widget.Config["lat"].(float64); ok {
-						lat = fmt.Sprintf("%f", latVal)
-					}
-					// Handle lon as string or number
-					if lonVal, ok := widget.Config["lon"].(string); ok {
-						lon = lonVal
-					} else if lonVal, ok := widget.Config["lon"].(float64); ok {
-						lon = fmt.Sprintf("%f", lonVal)
-					}
-					break
-				}
-			}
-		}
-	}
+	// Get lat/lon from widget config using shared helper
+	lat := shared.GetWidgetConfigValue("weather", "latitude", "")
+	lon := shared.GetWidgetConfigValue("weather", "longitude", "")
 
 	// Fall back to env vars if not in config
 	if lat == "" {
