@@ -70,7 +70,12 @@ func (w *TraegerWidget) Initialize() error {
 		return fmt.Errorf("failed to start Traeger client: %w", err)
 	}
 
-	log.Printf("[Traeger] Initialized successfully, found %d grills", len(w.client.GetGrills()))
+	grills := w.client.GetGrills()
+	log.Printf("[Traeger] Initialized successfully, found %d grills", len(grills))
+	for _, grill := range grills {
+		grillMap := grill.(map[string]interface{})
+		log.Printf("[Traeger] Available grill: %s (thing: %s)", grillMap["friendlyName"], grillMap["thingName"])
+	}
 
 	// Start background goroutine to store temperature history
 	go w.recordTemperatureHistory()
@@ -100,16 +105,22 @@ func (w *TraegerWidget) getGrillStatus(rw http.ResponseWriter, r *http.Request) 
 	// Find the grill by friendly name
 	grills := w.client.GetGrills()
 	var thingName string
+	var availableGrills []string
 	for _, grill := range grills {
 		grillMap := grill.(map[string]interface{})
-		if grillMap["friendlyName"].(string) == grillName {
+		friendlyName := grillMap["friendlyName"].(string)
+		availableGrills = append(availableGrills, friendlyName)
+		if friendlyName == grillName {
 			thingName = grillMap["thingName"].(string)
 			break
 		}
 	}
 
 	if thingName == "" {
-		http.Error(rw, `{"error":"grill not found"}`, http.StatusNotFound)
+		availableJSON, _ := json.Marshal(availableGrills)
+		errorMsg := fmt.Sprintf(`{"error":"Grill '%s' not found","requested":"%s","available":%s}`, grillName, grillName, string(availableJSON))
+		log.Printf("[Traeger] Grill '%s' not found. Available grills: %v", grillName, availableGrills)
+		http.Error(rw, errorMsg, http.StatusNotFound)
 		return
 	}
 
