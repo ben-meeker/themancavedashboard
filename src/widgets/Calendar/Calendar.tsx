@@ -91,15 +91,21 @@ const CalendarWidget: React.FC = () => {
     const eventStartDate = new Date(event.start);
     const eventEndDate = new Date(event.end);
     
-    // Normalize to start of day for comparison
-    eventStartDate.setHours(0, 0, 0, 0);
-    eventEndDate.setHours(0, 0, 0, 0);
+    // For all-day events, the date is already in YYYY-MM-DD format (no time component)
+    // For timed events, we need to extract just the date in local timezone
+    const getLocalDateOnly = (date: Date) => {
+      // Create a new date using the local year, month, and day
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0);
+    };
     
-    const isMultiDay = eventEndDate.getTime() > eventStartDate.getTime();
+    const startDateOnly = getLocalDateOnly(eventStartDate);
+    const endDateOnly = getLocalDateOnly(eventEndDate);
+    
+    const isMultiDay = endDateOnly.getTime() > startDateOnly.getTime();
     
     // Loop through each day the event spans
-    const currentDay = new Date(eventStartDate);
-    while (currentDay <= eventEndDate) {
+    const currentDay = new Date(startDateOnly);
+    while (currentDay <= endDateOnly) {
       // Only show events for the current month
       if (currentDay.getMonth() === currentDate.getMonth() && 
           currentDay.getFullYear() === currentDate.getFullYear()) {
@@ -112,9 +118,9 @@ const CalendarWidget: React.FC = () => {
         // Track position in multi-day event
         if (isMultiDay) {
           let position: 'start' | 'middle' | 'end' | 'single';
-          if (currentDay.getTime() === eventStartDate.getTime()) {
+          if (currentDay.getTime() === startDateOnly.getTime()) {
             position = 'start';
-          } else if (currentDay.getTime() === eventEndDate.getTime()) {
+          } else if (currentDay.getTime() === endDateOnly.getTime()) {
             position = 'end';
           } else {
             position = 'middle';
