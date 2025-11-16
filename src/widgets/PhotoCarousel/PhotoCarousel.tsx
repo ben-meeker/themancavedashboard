@@ -58,8 +58,10 @@ const PhotoCarousel: React.FC = () => {
       }
       
       const filenames: string[] = await response.json();
+      // Add cache-busting timestamp to force fresh image loads
+      const cacheBuster = Date.now();
       const photoList: Photo[] = filenames.map((filename) => ({
-        url: `/photos/${filename}`,
+        url: `/photos/${filename}?v=${cacheBuster}`,
         filename,
       }));
 
