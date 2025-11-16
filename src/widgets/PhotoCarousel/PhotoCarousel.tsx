@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './PhotoCarousel.css';
 import ConfigurableWidget from '../../components/ConfigurableWidget';
 import { getWidgetMetadata, widgetMetadataToLegacyConfig } from '../../config/widgetRegistryHelper';
@@ -14,6 +14,9 @@ const PhotoCarousel: React.FC = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [rotationSeconds, setRotationSeconds] = useState(45);
+  const [erroredPhotos, setErroredPhotos] = useState<Set<string>>(new Set());
+  const configLoadedRef = useRef(false);
+  const lastErrorTimeRef = useRef<number>(0);
 
   // Get widget configuration
   const metadata = getWidgetMetadata('photos');
@@ -75,6 +78,8 @@ const PhotoCarousel: React.FC = () => {
 
   // Load widget config
   useEffect(() => {
+    if (configLoadedRef.current) return;
+    
     const loadConfig = async () => {
       try {
         const layout = await loadLayout();
@@ -82,7 +87,9 @@ const PhotoCarousel: React.FC = () => {
         if (photosWidget?.config) {
           const seconds = photosWidget.config.photo_rotation_seconds as number;
           if (seconds) {
+            console.log('[PhotoCarousel] Config loaded, rotation seconds:', seconds);
             setRotationSeconds(seconds);
+            configLoadedRef.current = true;
           }
         }
       } catch (error) {
@@ -99,13 +106,27 @@ const PhotoCarousel: React.FC = () => {
 
   // Auto-advance photos
   useEffect(() => {
-    if (photos.length <= 1) return;
+    console.log(`[PhotoCarousel] Auto-advance effect triggered. Photos: ${photos.length}, Rotation: ${rotationSeconds}s`);
+    
+    if (photos.length <= 1) {
+      console.log('[PhotoCarousel] Not enough photos, skipping rotation setup');
+      return;
+    }
 
+    console.log(`[PhotoCarousel] Starting rotation timer: ${rotationSeconds} seconds`);
+    const startTime = Date.now();
+    
     const interval = setInterval(() => {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`[PhotoCarousel] Rotating to next photo (elapsed: ${elapsed}s)`);
       setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
     }, rotationSeconds * 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`[PhotoCarousel] Clearing rotation timer (was active for ${elapsed}s)`);
+      clearInterval(interval);
+    };
   }, [photos.length, rotationSeconds]);
 
   if (loading) {
@@ -162,6 +183,42 @@ const PhotoCarousel: React.FC = () => {
     return <div>Widget configuration not found</div>;
   }
 
+  const handleImageError = () => {
+    const currentPhoto = photos[currentIndex];
+    console.error('[PhotoCarousel] Error loading image:', currentPhoto.url);
+    console.error('[PhotoCarousel] Expected path: /app/config/photos/' + currentPhoto.filename);
+    
+    // Track this photo as errored
+    setErroredPhotos(prev => {
+      const newSet = new Set(prev);
+      newSet.add(currentPhoto.filename);
+      
+      // Log if all photos have failed
+      if (newSet.size === photos.length) {
+        console.error('[PhotoCarousel] ALL PHOTOS FAILED TO LOAD!');
+        console.error('[PhotoCarousel] Check that photos exist in your CONFIG_DIR/photos/ folder');
+        console.error('[PhotoCarousel] Photo list:', photos.map(p => p.filename));
+      }
+      
+      return newSet;
+    });
+    
+    // Rate limit: only advance if it's been at least 2 seconds since last error
+    const now = Date.now();
+    const timeSinceLastError = now - lastErrorTimeRef.current;
+    
+    if (timeSinceLastError < 2000) {
+      console.warn('[PhotoCarousel] Too many errors too quickly (< 2s), pausing auto-advance');
+      return;
+    }
+    
+    lastErrorTimeRef.current = now;
+    
+    // Try to load next image
+    console.log('[PhotoCarousel] Advancing to next photo due to load error');
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
+  };
+
   return (    <ConfigurableWidget
       config={config}
       checkConfig={checkPhotosConfig}
@@ -173,16 +230,17 @@ const PhotoCarousel: React.FC = () => {
           src={photos[currentIndex].url}
           alt={photos[currentIndex].filename}
           className="photo-image"
-          onError={() => {
-            console.error('Error loading image:', photos[currentIndex].url);
-            // Try to load next image
-            setCurrentIndex((prevIndex) => (prevIndex + 1) % photos.length);
-          }}
+          onError={handleImageError}
         />
         
         <div className="photo-controls">
           <div className="photo-indicator">
             {currentIndex + 1} / {photos.length}
+            {erroredPhotos.size > 0 && (
+              <span style={{ color: '#ff6b6b', marginLeft: '8px' }}>
+                ({erroredPhotos.size} failed)
+              </span>
+            )}
           </div>
         </div>
         </div>
